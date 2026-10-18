@@ -29,7 +29,9 @@
 
     <div class="d-flex justify-content-between mb-3">
         <h3>Daftar Buku</h3>
-        <a href="{{ route('buku.create') }}" class="btn btn-del">+ Tambah Buku</a>
+        @auth
+            <a href="{{ route('buku.create') }}" class="btn btn-del">+ Tambah Buku</a>
+        @endauth
     </div>
 
     {{-- Form pencarian (GET, tidak perlu @csrf) --}}
@@ -55,7 +57,11 @@
     <div class="table-responsive">
         <table class="table table-striped bg-white shadow-sm align-middle">
             <thead>
-                <tr><th>ISBN</th><th>Judul</th><th>Penulis</th><th>Kategori</th><th>Stok</th><th>Dipinjam (kali)</th><th>Aksi</th></tr>
+                <tr>
+                    <th>ISBN</th><th>Judul</th><th>Penulis</th><th>Kategori</th>
+                    <th>Stok</th><th>Dipinjam (kali)</th>
+                    @auth<th>Aksi</th>@endauth
+                </tr>
             </thead>
             <tbody>
             @forelse($bukus as $buku)
@@ -66,6 +72,7 @@
                     <td>{{ $buku->kategori->nama_kategori }}</td>
                     <td>{{ $buku->stok }}</td>
                     <td>{{ $buku->peminjamans_count }}</td>
+                    @auth
                     <td>
                         <div class="d-flex gap-1">
                             <a href="{{ route('buku.show', $buku) }}" class="btn btn-sm btn-info">Detail</a>
@@ -78,6 +85,7 @@
                             </form>
                         </div>
                     </td>
+                    @endauth
                 </tr>
             @empty
                 <tr><td colspan="7" class="text-center text-muted">Tidak ada buku yang cocok.</td></tr>

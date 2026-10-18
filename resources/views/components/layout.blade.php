@@ -15,10 +15,19 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbar-del shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{{ route('buku.index') }}">SIPUS-Del</a>
-        <div class="navbar-nav flex-row gap-3">
+        <div class="navbar-nav flex-row gap-3 align-items-center">
             <a class="nav-link" href="{{ route('buku.index') }}">Buku</a>
-            <a class="nav-link" href="{{ route('kategori.index') }}">Kategori</a>
-            <a class="nav-link" href="{{ route('peminjaman.index') }}">Peminjaman</a>
+            @auth
+                <a class="nav-link" href="{{ route('kategori.index') }}">Kategori</a>
+                <a class="nav-link" href="{{ route('peminjaman.index') }}">Peminjaman</a>
+                <span class="navbar-text small text-white-50">{{ auth()->user()->name }}</span>
+                <form action="{{ route('logout') }}" method="POST" class="m-0">
+                    @csrf
+                    <button class="btn btn-sm btn-outline-light">Logout</button>
+                </form>
+            @else
+                <a class="nav-link" href="{{ route('login') }}">Login</a>
+            @endauth
         </div>
     </div>
 </nav>
@@ -35,6 +44,16 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+
+    @auth
+        @if(session('login_timestamp') || session('last_search'))
+            <div class="small text-muted mb-3">
+                @if(session('login_timestamp'))Login sejak: {{ session('login_timestamp') }}@endif
+                @if(session('last_search')) &middot; Pencarian terakhir: <em>{{ session('last_search') }}</em>@endif
+            </div>
+        @endif
+    @endauth
+
     {{ $slot }}
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
