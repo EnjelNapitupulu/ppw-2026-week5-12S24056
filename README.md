@@ -66,3 +66,58 @@ database/factories/    BukuFactory, KategoriFactory
 database/seeders/      DatabaseSeeder
 resources/views/       components/layout, buku/*, kategori/*
 ```
+
+---
+
+# Minggu 6: SIPUS-Del Tahap 2 (Transaksi ACID, Query Builder, Session & Auth)
+
+Branch: `week6-db-session`
+
+## Akun Uji Pustakawan
+| Email | Password |
+|---|---|
+| pustakawan@del.ac.id | password123 |
+
+## Instalasi
+```bash
+git clone https://github.com/USERNAME/ppw-2026-week5-NIM.git
+cd ppw-2026-week5-NIM
+git checkout week6-db-session
+composer install
+cp .env.example .env        # Windows CMD: copy .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve
+```
+
+## ERD
+```mermaid
+erDiagram
+    KATEGORIS ||--o{ BUKUS : memiliki
+    BUKUS ||--o{ PEMINJAMANS : dipinjam
+    KATEGORIS { bigint id PK string kode_kategori UK string nama_kategori }
+    BUKUS { bigint id PK string isbn UK string judul string penulis int stok bigint kategori_id FK }
+    PEMINJAMANS { bigint id PK string kode_pinjam UK bigint buku_id FK string nim_peminjam string nama_peminjam date tanggal_pinjam date tanggal_jatuh_tempo date tanggal_kembali string status }
+```
+
+## Fitur
+- Tabel `peminjamans` dengan FK `buku_id` (`cascadeOnDelete`), relasi `Buku hasMany Peminjaman`
+- Peminjaman dan pengembalian dalam `DB::transaction()` + `lockForUpdate()`; stok 0 dan NIM ganda ditolak (rollback); `QueryException` dicatat via `Log::error()`
+- Katalog: `with('kategori')->withCount('peminjamans')`, filter `when()`, `withQueryString()`
+- Statistik dengan `DB::table()`: total judul, total stok, sedang dipinjam, dikembalikan
+- Login/logout dengan `Auth::attempt()`, `session()->regenerate()`, `invalidate()` + `regenerateToken()`
+- Middleware `auth` pada semua rute mutasi; state session (`login_timestamp`, `last_search`); cookie `del_last_user_email` via `Cookie::queue()`
+
+## Bukti Pengujian
+| Pengujian | Bukti |
+|---|---|
+| Pinjam berhasil | ![](docs/pinjam-sukses.png) |
+| Stok 0 ditolak (rollback) | ![](docs/stok-nol-ditolak.png) |
+| Pengembalian | ![](docs/kembali-sukses.png) |
+| Cookie HttpOnly (DevTools) | ![](docs/cookie-httponly.png) |
+| Login | ![](docs/login-sukses.png) |
+| Koneksi DB | ![](docs/db-show.png) |
+| Audit SQL katalog | ![](docs/sql-audit-week6.png) |
+
+## Catatan SQLite
+SQLite tidak punya row-level locking, jadi `lockForUpdate()` tidak menghasilkan `SELECT ... FOR UPDATE` seperti MySQL InnoDB. SQLite mengunci seluruh file saat menulis, sehingga stok tetap tidak bisa minus. Kode langsung bekerja penuh jika dipindah ke MySQL.
