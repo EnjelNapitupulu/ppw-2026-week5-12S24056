@@ -6,6 +6,7 @@ use App\Models\Buku;
 use App\Models\Kategori;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class BukuController extends Controller
 {
@@ -23,11 +24,38 @@ class BukuController extends Controller
         ];
     }
 
-    public function index()
-    {
-        $bukus = Buku::with('kategori')->latest()->paginate(10);
-        return view('buku.index', compact('bukus'));
+    public function index(Request $request)
+{
+    // Simpan histori pencarian terakhir di session (dipakai di Bagian 4)
+    if ($request->filled('search')) {
+        session(['last_search' => $request->search]);
     }
+
+    $bukus = Buku::with('kategori')
+        ->withCount('peminjamans')
+        ->when($request->search, function ($q, $s) {
+            $q->where(function ($q) use ($s) {
+                $q->where('judul', 'like', "%{$s}%")
+                  ->orWhere('penulis', 'like', "%{$s}%")
+                  ->orWhere('isbn', 'like', "%{$s}%");
+            });
+        })
+        ->when($request->kategori_id, fn ($q, $k) => $q->where('kategori_id', $k))
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    $stats = [
+        'total_judul' => DB::table('bukus')->count(),
+        'total_stok' => DB::table('bukus')->sum('stok'),
+        'total_dipinjam' => DB::table('peminjamans')->where('status', 'dipinjam')->count(),
+        'total_dikembalikan' => DB::table('peminjamans')->where('status', 'dikembalikan')->count(),
+    ];
+
+    $kategoris = Kategori::orderBy('nama_kategori')->get();
+
+    return view('buku.index', compact('bukus', 'stats', 'kategoris'));
+}
 
     public function create()
     {
