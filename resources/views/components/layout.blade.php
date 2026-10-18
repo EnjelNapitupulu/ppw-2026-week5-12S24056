@@ -18,6 +18,7 @@
         <div class="navbar-nav flex-row gap-3">
             <a class="nav-link" href="{{ route('buku.index') }}">Buku</a>
             <a class="nav-link" href="{{ route('kategori.index') }}">Kategori</a>
+            <a class="nav-link" href="{{ route('peminjaman.index') }}">Peminjaman</a>
         </div>
     </div>
 </nav>
@@ -25,6 +26,12 @@
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">
             {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            {{ session('error') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
