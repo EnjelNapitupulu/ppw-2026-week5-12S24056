@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\V1\PeminjamanApiController;
 use App\Http\Controllers\Api\V1\AuthTokenController;
 use App\Http\Controllers\Api\V1\BukuApiController;
+use App\Http\Controllers\Api\V1\BukuReferensiController;
+use App\Http\Controllers\Api\V1\PeminjamanApiController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -15,6 +16,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [AuthTokenController::class, 'login']);
     Route::get('/bukus', [BukuApiController::class, 'index']);
     Route::get('/bukus/{id}', [BukuApiController::class, 'show']);
+    Route::get('/bukus/{id}/referensi-eksternal', [BukuReferensiController::class, 'show']);
 
     // ===== WAJIB BEARER TOKEN =====
     Route::middleware('auth:sanctum')->group(function () {
@@ -27,8 +29,8 @@ Route::prefix('v1')->group(function () {
         Route::delete('/bukus/{id}', [BukuApiController::class, 'destroy']);
 
         Route::get('/peminjamans', [PeminjamanApiController::class, 'index']);
-        Route::post('/peminjamans', [PeminjamanApiController::class, 'store']);
         Route::get('/peminjamans/{id}', [PeminjamanApiController::class, 'show']);
+        Route::post('/peminjamans', [PeminjamanApiController::class, 'store']);
         Route::patch('/peminjamans/{id}/kembalikan', [PeminjamanApiController::class, 'kembalikan']);
     });
 });

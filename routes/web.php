@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\PeminjamanController;
+use App\Http\Controllers\Soap\LibrarySoapController;
 use Illuminate\Support\Facades\Route;
 
 // Publik
@@ -13,6 +14,10 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.attempt')->
 
 // Katalog boleh dilihat publik (hanya baca)
 Route::get('/buku', [BukuController::class, 'index'])->name('buku.index');
+
+// SOAP bebas pustaka (CSRF dikecualikan di bootstrap/app.php: 'soap/*')
+Route::get('/soap/sipus.wsdl', [LibrarySoapController::class, 'wsdl']);
+Route::post('/soap/sipus', [LibrarySoapController::class, 'handle']);
 
 // Rute mutasi: wajib login
 Route::middleware('auth')->group(function () {
